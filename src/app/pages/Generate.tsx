@@ -49,6 +49,7 @@ export default function Generate() {
     const savedGenerating = localStorage.getItem('isGenerating') === 'true';
     
     if (savedJobId && savedGenerating) {
+      setIsGenerating(true);
       pollRef.current = setInterval(async () => {
         const statusRes = await fetch(`${API_BASE}/status/${savedJobId}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
