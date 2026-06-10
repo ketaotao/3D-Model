@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Box } from 'lucide-react';
+import { Box, Trash2 } from 'lucide-react';
 
 function ProductThumbnail({ url, videoUrl, name }: { url: string | null; videoUrl?: string | null; name: string }) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -34,6 +34,14 @@ export default function Home() {
     setProducts(saved);
   }, []);
 
+  const handleDelete = (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const updated = products.filter(p => p.id !== id);
+    setProducts(updated);
+    localStorage.setItem('products', JSON.stringify(updated));
+  };
+
   return (
     <div className="w-full bg-background min-h-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -54,7 +62,7 @@ export default function Home() {
               <Link
                 key={product.id}
                 to={`/product/${product.id}`}
-                className="bg-card rounded-2xl overflow-hidden hover:shadow-[0_0_20px_rgba(91,91,255,0.3)] transition-all cursor-pointer border border-border"
+                className="bg-card rounded-2xl overflow-hidden hover:shadow-[0_0_20px_rgba(91,91,255,0.3)] transition-all cursor-pointer border border-border relative group"
               >
                 <div className="relative aspect-square overflow-hidden">
                   <ProductThumbnail url={product.thumbnailUrl} videoUrl={product.videoUrl} name={product.name} />
@@ -63,6 +71,12 @@ export default function Home() {
                       {t('home.badge')}
                     </span>
                   </div>
+                  <button
+                    onClick={(e) => handleDelete(e, product.id)}
+                    className="absolute top-3 right-3 p-2 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 text-white" />
+                  </button>
                 </div>
                 <div className="p-3 sm:p-4">
                   <h3 className="text-sm sm:text-base mb-1 sm:mb-2 text-foreground truncate" style={{ fontWeight: 600 }}>
