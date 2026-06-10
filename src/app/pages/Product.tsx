@@ -1,7 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import { MessageCircle, X, Send, Box } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+
+function VideoDisplay({ videoUrl, thumbnailUrl, name }: { videoUrl?: string | null; thumbnailUrl?: string | null; name: string }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (videoUrl && !thumbnailUrl) {
+      fetch(videoUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+        .then(r => r.blob())
+        .then(blob => setBlobUrl(URL.createObjectURL(blob)))
+        .catch(() => setBlobUrl(null));
+    }
+  }, [videoUrl, thumbnailUrl]);
+
+  if (thumbnailUrl) return <img src={thumbnailUrl} alt={name} className="w-full h-full object-cover" />;
+  if (blobUrl) return <video src={blobUrl} autoPlay loop controls className="w-full h-full object-cover" />;
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+      <Box className="w-16 h-16 text-border" />
+      <p className="text-sm text-muted-foreground">3D 이미지</p>
+    </div>
+  );
+}
 
 export default function Product() {
   const { id } = useParams();
@@ -10,7 +32,6 @@ export default function Product() {
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<Array<{ sender: string; text: string }>>([]);
 
-  // localStorage에서 상품 데이터 가져오기
   const products = JSON.parse(localStorage.getItem('products') || '[]');
   const product = products.find((p: any) => p.id === Number(id)) || products[0];
 
@@ -39,19 +60,9 @@ export default function Product() {
     <div className="w-full min-h-full bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          {/* Left - 이미지/영상 */}
           <div>
             <div className="relative aspect-square bg-input-background rounded-3xl overflow-hidden border border-border">
-              {product.videoUrl ? (
-                <video src={product.videoUrl} autoPlay loop muted className="w-full h-full object-cover" />
-              ) : product.thumbnailUrl ? (
-                <img src={product.thumbnailUrl} alt={product.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                  <Box className="w-16 h-16 text-border" />
-                  <p className="text-sm text-muted-foreground">3D 이미지</p>
-                </div>
-              )}
+              <VideoDisplay videoUrl={product.videoUrl} thumbnailUrl={product.thumbnailUrl} name={product.name} />
               <div className="absolute bottom-8 left-8 text-foreground text-sm">
                 <p className="mb-1">{t('product.viewerHint')}</p>
                 <p className="text-xs text-muted-foreground">({t('product.rendering')})</p>
@@ -59,7 +70,6 @@ export default function Product() {
             </div>
           </div>
 
-          {/* Right - 상품 정보 */}
           <div className="flex flex-col">
             <div className="mb-6">
               <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
