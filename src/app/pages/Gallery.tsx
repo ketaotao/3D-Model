@@ -5,12 +5,19 @@ import { useLanguage } from '../contexts/LanguageContext';
 import Alert from '../components/Alert';
 
 function ModelThumbnail({ url, videoUrl, name }: { url: string | null; videoUrl?: string | null; name: string }) {
-  if (url) {
-    return <img src={url} alt={name} className="w-full h-full object-cover" />;
-  }
-  if (videoUrl) {
-    return <video src={videoUrl} className="w-full h-full object-cover" muted playsInline autoPlay loop />;
-  }
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (videoUrl && !url) {
+      fetch(videoUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+        .then(r => r.blob())
+        .then(blob => setBlobUrl(URL.createObjectURL(blob)))
+        .catch(() => setBlobUrl(null));
+    }
+  }, [videoUrl, url]);
+
+  if (url) return <img src={url} alt={name} className="w-full h-full object-cover" />;
+  if (blobUrl) return <video src={blobUrl} className="w-full h-full object-cover" muted playsInline autoPlay loop />;
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-input-background">
       <Box className="w-10 h-10 text-border" />
