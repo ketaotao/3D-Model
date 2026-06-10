@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Grid3x3, LayoutGrid, Search, Download, Eye, Trash2, X, Box } from 'lucide-react';
+import { Grid3x3, LayoutGrid, Search, Download, Eye, Trash2, X, Box, Pencil, Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import Alert from '../components/Alert';
@@ -38,6 +38,8 @@ export default function Gallery() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteModelId, setDeleteModelId] = useState<number | null>(null);
   const [modelsList, setModelsList] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('gallery') || '[]');
@@ -69,6 +71,20 @@ export default function Gallery() {
       setShowAlert(true);
       setDeleteModelId(null);
     }
+  };
+
+  const handleEditStart = (e: React.MouseEvent, model: any) => {
+    e.stopPropagation();
+    setEditingId(model.id);
+    setEditingName(model.name);
+  };
+
+  const handleEditSave = (e: React.MouseEvent, modelId: number) => {
+    e.stopPropagation();
+    const updated = modelsList.map(m => m.id === modelId ? { ...m, name: editingName } : m);
+    setModelsList(updated);
+    localStorage.setItem('gallery', JSON.stringify(updated));
+    setEditingId(null);
   };
 
   const filteredModels = modelsList.filter(model =>
@@ -135,7 +151,28 @@ export default function Gallery() {
                 </div>
               </div>
               <div className="p-4">
-                <h3 className="text-base mb-2 text-foreground" style={{ fontWeight: 600 }}>{model.name}</h3>
+                {editingId === model.id ? (
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 text-sm bg-input-background border border-[#5b5bff] text-foreground rounded-lg px-2 py-1 focus:outline-none"
+                      autoFocus
+                    />
+                    <button onClick={(e) => handleEditSave(e, model.id)} className="p-1 bg-[#5b5bff] rounded-lg">
+                      <Check className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-base text-foreground flex-1 truncate" style={{ fontWeight: 600 }}>{model.name}</h3>
+                    <button onClick={(e) => handleEditStart(e, model)} className="p-1 hover:bg-secondary rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{model.resolution}px</span>
                   <span>{model.date}</span>
