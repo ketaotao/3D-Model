@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import Alert from '../components/Alert';
 
-function ModelThumbnail({ url, videoUrl, name }: { url: string | null; videoUrl?: string | null; name: string }) {
+function ModelThumbnail({ url, videoUrl, name, contain = false }: { url: string | null; videoUrl?: string | null; name: string; contain?: boolean }) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -16,8 +16,10 @@ function ModelThumbnail({ url, videoUrl, name }: { url: string | null; videoUrl?
     }
   }, [videoUrl, url]);
 
-  if (url) return <img src={url} alt={name} className="w-full h-full object-cover" />;
-  if (blobUrl) return <video src={blobUrl} className="w-full h-full object-cover" muted playsInline autoPlay loop />;
+  const cls = contain ? 'w-full h-full object-contain' : 'w-full h-full object-cover';
+
+  if (url) return <img src={url} alt={name} className={cls} />;
+  if (blobUrl) return <video src={blobUrl} className={cls} muted playsInline autoPlay loop />;
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-input-background">
       <Box className="w-10 h-10 text-border" />
@@ -164,7 +166,7 @@ export default function Gallery() {
             </div>
             <div className="p-8">
               <div className="aspect-video rounded-xl overflow-hidden border border-border relative">
-                <ModelThumbnail url={selectedModel.thumbnailUrl} videoUrl={selectedModel.videoUrl} name={selectedModel.name} />
+                <ModelThumbnail url={selectedModel.thumbnailUrl} videoUrl={selectedModel.videoUrl} name={selectedModel.name} contain={true} />
                 <div className="absolute bottom-3 left-3">
                   <span className="px-2.5 py-1 bg-black/60 rounded-lg text-xs text-white">{t('gallery.viewer')}</span>
                 </div>

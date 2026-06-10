@@ -16,7 +16,7 @@ function VideoDisplay({ videoUrl, thumbnailUrl, name }: { videoUrl?: string | nu
   }, [videoUrl, thumbnailUrl]);
 
   if (thumbnailUrl) return <img src={thumbnailUrl} alt={name} className="w-full h-full object-cover" />;
-  if (blobUrl) return <video src={blobUrl} autoPlay loop controls className="w-full h-full object-cover" />;
+  if (blobUrl) return <video src={blobUrl} autoPlay loop controls className="w-full h-full object-contain" />;
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-3">
       <Box className="w-16 h-16 text-border" />
